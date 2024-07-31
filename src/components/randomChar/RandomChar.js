@@ -6,6 +6,7 @@ import ErrorMessege from '../errorMessege/ErrorMessege';
 import './randomChar.scss';
 import mjolnir from '../../resources/img/mjolnir.png';
 
+
 class RandomChar extends Component {
 
 	state = {
@@ -19,11 +20,9 @@ class RandomChar extends Component {
 	componentDidMount() {
 		this.updateChar();
 		// this.timerId = setInterval(this.updateChar, 20000)
-		console.log('Mount');
 	}
 	componentWillUnmount() {
 		// clearInterval(this.timerId)
-		console.log('Unmount');
 	}
 
 	onCharLoaded = (char) => {
@@ -41,7 +40,6 @@ class RandomChar extends Component {
 	}
 
 	updateChar = () => {
-		console.log('updateChar');
 		const id = Math.floor(Math.random() * (1011400 - 1011000) + 1011000);
 		this.marvelService
 			.getCharacter(id)
@@ -57,23 +55,11 @@ class RandomChar extends Component {
 		this.updateChar();
 	}
 
-
-	getDescription = (text, maxLength) => {
-		if (!text) {
-			return 'Описание персонажа отсутствует'
-		} else if (text.length <= maxLength) {
-			return text
-		} else {
-			return text.slice(0, maxLength) + '...';
-		}
-	}
-
 	render() {
-		console.log('render');
 		const { char, loading, error } = this.state;
 		const errorMessege = error ? <ErrorMessege /> : null;
 		const spinner = loading ? <Spinner /> : null;
-		const content = !(loading || error) ? <View char={char} getDescription={this.getDescription} /> : null
+		const content = !(loading || error) ? <View char={char} transformDescription={this.transformDescription} /> : null
 
 		return (
 			<div className="randomchar">
@@ -103,9 +89,8 @@ class RandomChar extends Component {
 	}
 }
 
-const View = ({ char, getDescription }) => {
+const View = ({ char }) => {
 	const { name, description, thumbnail, homepage, wiki } = char;
-	const descriptionText = getDescription(description, 200);
 	const blank = thumbnail === 'http://i.annihil.us/u/prod/marvel/i/mg/b/40/image_not_available.jpg'
 
 	return (
@@ -119,7 +104,7 @@ const View = ({ char, getDescription }) => {
 			<div className="randomchar__info">
 				<p className="randomchar__name">{name}</p>
 				<p className="randomchar__descr">
-					{descriptionText}
+					{description}
 				</p>
 				<div className="randomchar__btns">
 					<a href={homepage} className="button button__main">
@@ -135,3 +120,5 @@ const View = ({ char, getDescription }) => {
 }
 
 export default RandomChar;
+
+

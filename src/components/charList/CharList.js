@@ -8,9 +8,9 @@ import './charList.scss';
 class CharList extends Component {
 
   state = {
-    characters: [],
+    char: [],
     loading: true,
-    error: false
+    error: false,
   }
 
   marvelService = new MarvelService();
@@ -19,12 +19,19 @@ class CharList extends Component {
     this.updateChars();
   }
 
-  onCharLoaded = (characters) => {
+  onCharLoaded = (char) => {
     this.setState({
-      characters,
+      char,
       loading: false
     })
   }
+
+  onCharLoading = () => {
+    this.setState({
+      loading: true
+    })
+  }
+
 
   onError = () => {
 		this.setState({
@@ -34,6 +41,7 @@ class CharList extends Component {
 	}
 
   updateChars = () => {
+    this.onCharLoading
     this.marvelService
       .getAllCharacters()
       .then(this.onCharLoaded)
@@ -41,10 +49,10 @@ class CharList extends Component {
   }
 
   render() {
-    const { characters, loading, error } = this.state
+    const { char, loading, error } = this.state
     const errorMessege = error ? <ErrorMessege /> : null;
 		const spinner = loading ? <Spinner /> : null;
-		const content = !(loading || error) ? <View characters={characters}/> : null
+		const content = !(loading || error) ? <View char={char} onCharSelected={this.props.onCharSelected}/> : null
 
     return (
       <div className="char__list">
@@ -61,13 +69,17 @@ class CharList extends Component {
   }
 }
 
-const View = ({ characters }) => {
-  const elem = characters.map((item) => {
+const View = ({ char, onCharSelected } ) => {
+  const elems = char.map((item) => {
     const { id, name, thumbnail } = item;
     const blank = thumbnail === 'http://i.annihil.us/u/prod/marvel/i/mg/b/40/image_not_available.jpg'
-
+    
     return (
-      <li className="char__item" key={id}>
+      <li 
+        className="char__item" 
+        key={id}
+        onClick={() => onCharSelected(id)}
+      >
         <img
           src={thumbnail}
           alt={name}
@@ -78,6 +90,6 @@ const View = ({ characters }) => {
     );
   });
 
-  return elem;
+  return elems;
 }
 export default CharList;

@@ -1,3 +1,4 @@
+import transformDescription from "../components/helpers/TransformDescription";
 
 class MarvelService {
   _apiBase = 'https://gateway.marvel.com:443/v1/public/';
@@ -26,10 +27,12 @@ class MarvelService {
   _transformCharacter = (char) => {
     return {
       name: char.name,
-      description: char.description,
+      description: transformDescription(char.description),
       thumbnail: char.thumbnail.path + '.' + char.thumbnail.extension,
       homepage: char.urls[0].url,
-      wiki: char.urls[1].url
+      wiki: char.urls[1].url,
+      id: char.id,
+      comics: char.comics.items
     }
   }
 }
