@@ -3,6 +3,7 @@ import transformDescription from "../components/helpers/TransformDescription";
 class MarvelService {
   _apiBase = 'https://gateway.marvel.com:443/v1/public/';
   _apiKey = 'apikey=000be75a7b744fcfc909351b14fe483e';
+  _baseOffset = 210;
 
   getResourse = async (url) => {
     let res = await fetch(url);
@@ -14,8 +15,8 @@ class MarvelService {
     return await res.json();
   }
 
-  getAllCharacters = async () => {
-    const res = await this.getResourse(`${this._apiBase}characters?limit=9&offset=210&${this._apiKey}`);
+  getAllCharacters = async (offset = this._baseOffset) => {
+    const res = await this.getResourse(`${this._apiBase}characters?limit=9&offset=${offset}&${this._apiKey}`);
     return res.data.results.map(this._transformCharacter);
   }
 
