@@ -1,4 +1,6 @@
-import { Component } from 'react';
+import React,{ Component } from 'react';
+import PropTypes from 'prop-types';
+
 import MarvelService from '../../services/MarvelService';
 import Spinner from '../spinner/Spinner';
 import ErrorMessege from '../errorMessege/ErrorMessege';
@@ -17,6 +19,7 @@ class CharList extends Component {
   }
 
   marvelService = new MarvelService();
+  liRefs = [];
 
   componentDidMount() {
     this.onRequest()
@@ -29,8 +32,6 @@ class CharList extends Component {
       .then(this.onCharLoaded)
       .catch(this.onError);
   }
-
-  on
 
   onCharLoaded = (newChar) => {
     let ended = false;
@@ -60,12 +61,18 @@ class CharList extends Component {
 		})
 	}
 
+  focusOn = (id) => {
+    this.liRefs.forEach(ref => ref.current.classList.remove('char__item_selected'));
+    this.liRefs[id].current.classList.add('char__item_selected');
+    this.liRefs[id].current.focus();
+  };
+
 
   render() {
     const { char, loading, error, offset, newItemLoading, charEnded } = this.state
     const errorMessege = error ? <ErrorMessege /> : null;
 		const spinner = loading ? <Spinner /> : null;
-		const content = !(loading || error) ? <View char={char} onCharSelected={this.props.onCharSelected}/> : null
+		const content = !(loading || error) ? <View char={char} onCharSelected={this.props.onCharSelected} focusOn={this.focusOn} liRefs={this.liRefs}/> : null
 
     return (
       <div className="char__list">
@@ -87,16 +94,25 @@ class CharList extends Component {
   }
 }
 
-const View = ({ char, onCharSelected } ) => {
+const View = ({ char, onCharSelected, focusOn, liRefs } ) => {
   const elems = char.map((item) => {
     const { id, name, thumbnail } = item;
     const blank = thumbnail === 'http://i.annihil.us/u/prod/marvel/i/mg/b/40/image_not_available.jpg'
     
+    if (!liRefs[id]) {
+      liRefs[id] = React.createRef();
+    }
+
     return (
       <li 
         className="char__item" 
         key={id}
-        onClick={() => onCharSelected(id)}
+        ref={liRefs[id]}
+        tabIndex={0}
+        onClick={() => {
+          onCharSelected(id); 
+          focusOn(id);
+        }}
       >
         <img
           src={thumbnail}
@@ -109,5 +125,9 @@ const View = ({ char, onCharSelected } ) => {
   });
 
   return elems;
+}
+
+CharList.propTypes = {
+  onCharSelected: PropTypes.func.isRequired
 }
 export default CharList;
