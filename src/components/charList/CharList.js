@@ -1,4 +1,4 @@
-import React,{ Component } from 'react';
+import React,{ useState, useEffect, useRef } from 'react';
 import PropTypes from 'prop-types';
 
 import MarvelService from '../../services/MarvelService';
@@ -7,72 +7,65 @@ import ErrorMessege from '../errorMessege/ErrorMessege';
 
 import './charList.scss';
 
-class CharList extends Component {
+const CharList = (props) => {
 
-  state = {
-    char: [],
-    loading: true,
-    error: false,
-    newItemLoading: false,
-    offset: 1551,
-    charEnded: false
-  }
+  const [char, setChar] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(false);
+  const [newItemLoading, setNewItemLoading] = useState(false);
+  const [offset, setOffset] = useState(210);
+  const [charEnded, setCharEnded] = useState(false);
+  // 1551
 
-  marvelService = new MarvelService();
-  liRefs = [];
+  const marvelService = new MarvelService();
+  const itemRefs = useRef([]);
 
-  componentDidMount() {
-    this.onRequest()
-  }
+  useEffect(() => {
+    onRequest()
+  }, []);
 
-  onRequest = (offset) => {
-    this.onCharListLoading()
-    this.marvelService
+  const onRequest = (offset) => {
+    onCharListLoading()
+    marvelService
       .getAllCharacters(offset)
-      .then(this.onCharLoaded)
-      .catch(this.onError);
+      .then(onCharLoaded)
+      .catch(onError);
   }
 
-  onCharLoaded = (newChar) => {
+  const onCharLoaded = (newChar) => {
     let ended = false;
     if(newChar.length < 9) {
       ended = true
     }
 
-    this.setState(({offset, char}) => ({
-      char: [...char, ...newChar],
-      loading: false,
-      newItemLoading: false,
-      offset: offset + 9,
-      charEnded: ended
-    }))
+    setChar(char => [...char, ...newChar]);
+    setLoading(loading => false);
+    setNewItemLoading(newItemLoading => false);
+    setOffset(offset => offset + 9);
+    setCharEnded(charEnded => ended)
   }
 
-  onCharListLoading = () => {
-    this.setState({
-      newItemLoading: true
-    })
+  const onCharListLoading = () => {
+    setNewItemLoading(true)
   }
 
-  onError = () => {
-		this.setState({
-			loading: false,
-			error: true
-		})
+  const onError = () => {
+    setError(true);
+    setLoading(false)
 	}
 
-  focusOn = (id) => {
-    this.liRefs.forEach(ref => ref.current.classList.remove('char__item_selected'));
-    this.liRefs[id].current.classList.add('char__item_selected');
-    this.liRefs[id].current.focus();
+  const focusOn = (id) => {
+    if (itemRefs.current[id]) {
+      itemRefs.current.forEach(item => item.classList?.remove('char__item_selected'));
+      itemRefs.current[id].classList.add('char__item_selected');
+      itemRefs.current[id].focus();
+    }
   };
 
-
-  render() {
-    const { char, loading, error, offset, newItemLoading, charEnded } = this.state
+  
     const errorMessege = error ? <ErrorMessege /> : null;
 		const spinner = loading ? <Spinner /> : null;
-		const content = !(loading || error) ? <View char={char} onCharSelected={this.props.onCharSelected} focusOn={this.focusOn} liRefs={this.liRefs}/> : null
+		const content = !(loading || error) ? <View char={char} onCharSelected={props.onCharSelected} focusOn={focusOn} itemRefs={itemRefs}/> : null
 
     return (
       <div className="char__list">
@@ -85,33 +78,30 @@ class CharList extends Component {
           className="button button__main button__long"
           disabled={newItemLoading}
           style={{'display': charEnded ? 'none' : 'block'}}
-          onClick={() => this.onRequest(offset)}
+          onClick={() => onRequest(offset)}
         >
           <div className="inner">load more</div>
         </button>
       </div>
     )
-  }
+
 }
 
-const View = ({ char, onCharSelected, focusOn, liRefs } ) => {
-  const elems = char.map((item) => {
+const View = ({ char, onCharSelected, focusOn, itemRefs } ) => {
+  const elems = char.map((item, i) => {
     const { id, name, thumbnail } = item;
     const blank = thumbnail === 'http://i.annihil.us/u/prod/marvel/i/mg/b/40/image_not_available.jpg'
     
-    if (!liRefs[id]) {
-      liRefs[id] = React.createRef();
-    }
 
     return (
       <li 
         className="char__item" 
         key={id}
-        ref={liRefs[id]}
+        ref={el => itemRefs.current[i] = el}
         tabIndex={0}
         onClick={() => {
           onCharSelected(id); 
-          focusOn(id);
+          focusOn(i);
         }}
       >
         <img

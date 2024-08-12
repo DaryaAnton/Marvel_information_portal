@@ -1,4 +1,4 @@
-import { Component } from 'react';
+import { useState, useEffect } from 'react';
 import PropTypes from 'prop-types';
 
 import MarvelService from '../../services/MarvelService';
@@ -8,60 +8,44 @@ import Skeleton from '../skeleton/Skeleton';
 
 import './charInfo.scss';
 
-class CharInfo extends Component {
-	state = {
-		char: null,
-		loading: false,
-		error: false
-	}
+const CharInfo = ({charId}) => {
 
-	marvelService = new MarvelService();
+	const [char, setChar] = useState(null);
+	const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(false);
 
-	componentDidMount() {
-		this.updateChars();
-	}
+	const marvelService = new MarvelService();
 
-	componentDidUpdate(prevProps) {
-		if (this.props.charId !== prevProps.charId) {
-			this.updateChars();
-		}
-	}
+	useEffect(() => {
+    updateChars()
+  }, [charId]);
 
-	updateChars = () => {
-		const { charId } = this.props;
+	const updateChars = () => {
 		if (!charId) {
 			return;
 		}
 
-		this.onCharLoading();
-		this.marvelService
+		onCharLoading();
+		marvelService
 			.getCharacter(charId)
-			.then(this.onCharLoaded)
-			.catch(this.onError);
+			.then(onCharLoaded)
+			.catch(onError);
 	}
 
-	onCharLoaded = (char) => {
-		this.setState({
-			char,
-			loading: false,
-		})
+	const onCharLoaded = (char) => {
+		setChar(char);
+    setLoading(false);
 	}
 
-	onCharLoading = () => {
-		this.setState({
-			loading: true
-		})
+	const onCharLoading = () => {
+		setLoading(true)
 	}
 
-	onError = () => {
-		this.setState({
-			loading: false,
-			error: true
-		})
+	const onError = () => {
+		setError(true);
+    setLoading(false)
 	}
 
-	render() {
-		const { char, loading, error } = this.state;
 
 		const skeleton = char || loading || error ? null : <Skeleton />
 		const errorMessege = error ? <ErrorMessege /> : null;
@@ -76,7 +60,6 @@ class CharInfo extends Component {
 				{content}
 			</div>
 		)
-	}
 }
 
 const View = ({ char }) => {
@@ -123,7 +106,6 @@ const View = ({ char }) => {
 						)
 					})
 				}
-
 			</ul>
 		</>
 	)
